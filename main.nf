@@ -205,11 +205,11 @@ workflow {
     // params.reverse_primer_revcomp = revcomp(params.reverse_primer)
     
     // merge, trim, convert
-    Channel.fromFilePairs(params.fastq_folder + params.fastq_pattern) |
+    ch_filtered_fasta = channel.fromFilePairs(params.fastq_folder + params.fastq_pattern) |
         merge_fastq_pairs |
         trim_primers |
-        convert_fastq_to_fasta |
-        dereplicate_fasta
-    // extract_expected_error_values(ch_filtered_fasta)
-    //     dereplicate_fasta
+        convert_fastq_to_fasta
+
+    extract_expected_error_values(ch_filtered_fasta)
+    dereplicate_fasta(ch_filtered_fasta)
 }
