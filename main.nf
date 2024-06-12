@@ -100,7 +100,7 @@ process trim_primers {
 
     output:
     val sampleId
-    path trimmed_fastq
+    path "trimmed_fastq"
 
     shell:
     '''
