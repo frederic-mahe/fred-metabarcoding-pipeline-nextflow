@@ -196,6 +196,36 @@ process dereplicate_fasta {
 }
 
 
+process list_local_clusters {
+    // retain only clusters with more than 2 reads
+    // (do not use the fastidious option here)
+    input:
+    val sampleId
+    path dereplicated_fasta
+
+    publishDir params.fastq_folder
+
+    output:
+    val sampleId
+    path "${sampleId}.stats"
+
+    shell:
+    '''
+    #!/bin/bash
+
+    swarm \
+        --threads !{params.threads} \
+        --differences 1 \
+        --usearch-abundance \
+        --log /dev/null \
+        --output-file /dev/null \
+        --statistics-file - \
+        !{dereplicated_fasta} | \
+        awk 'BEGIN {FS = OFS = "\t"} $2 > 2' > !{sampleId}.stats
+    '''
+}
+
+
 workflow {
     // collect test data
     generate_test_data_urls |
