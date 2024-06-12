@@ -240,7 +240,10 @@ workflow {
         trim_primers |
         convert_fastq_to_fasta
 
+    // set aside EE values
     extract_expected_error_values(ch_filtered_fasta)
+
+    // dereplicate and clusterize
     dereplicate_fasta(ch_filtered_fasta) |
         list_local_clusters
 }
