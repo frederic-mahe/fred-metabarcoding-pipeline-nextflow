@@ -146,6 +146,31 @@ process convert_fastq_to_fasta {
     '''
 }
 
+
+process extract_expected_error_values {
+    // extract ee for future quality filtering (keep the lowest
+    // observed expected error value for each unique sequence)
+    input:
+    val sampleId
+    path filtered_fasta
+
+    publishDir params.fastq_folder
+
+    output:
+    val sampleId
+    path "${sampleId}.qual"
+
+    shell:
+    '''
+    length_of_sequence_IDs=40
+    paste - - < !{filtered_fasta} | \
+        awk 'BEGIN {FS = "[>;=\t]"} {print $2, $4, length($NF)}' | \
+        sort --key=3,3n --key=1,1d --key=2,2n | \
+        uniq --check-chars=${length_of_sequence_IDs} > !{sampleId}.qual
+    '''
+}
+
+
 workflow {
 
     // collect test data
@@ -159,5 +184,6 @@ workflow {
     Channel.fromFilePairs(params.fastq_folder + params.fastq_pattern) |
         merge_fastq_pairs |
         trim_primers |
-        convert_fastq_to_fasta
+        convert_fastq_to_fasta |
+        extract_expected_error_values
 }
