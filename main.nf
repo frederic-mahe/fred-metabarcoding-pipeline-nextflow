@@ -115,7 +115,7 @@ process trim_primers {
         cutadapt \
             --adapter "!{params.reverse_primer_revcomp}" \
             --overlap "${MIN_R}" \
-            --max-n 0 - > trimmed_fastq &
+            --max-n 0 - > trimmed_fastq
     '''
 }
 
