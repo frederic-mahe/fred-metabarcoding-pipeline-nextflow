@@ -120,6 +120,32 @@ process trim_primers {
 }
 
 
+process convert_fastq_to_fasta {
+    // use SHA1 values as sequence names,
+    // compute expected error values (ee)
+    input:
+    val sampleId
+    path trimmed_fastq
+
+    output:
+    val sampleId
+    path "filtered_fasta"
+
+    shell:
+    '''
+    #!/bin/bash
+
+    vsearch \
+        --fastq_filter !{trimmed_fastq} \
+        --relabel_sha1 \
+        --fastq_ascii !{params.fastq_encoding} \
+        --quiet \
+        --eeout \
+        --fasta_width 0 \
+        --fastaout - > filtered_fasta
+    '''
+}
+
 workflow {
 
     // collect test data
@@ -132,5 +158,6 @@ workflow {
     // merge, trim
     Channel.fromFilePairs(params.fastq_folder + params.fastq_pattern) |
         merge_fastq_pairs |
-        trim_primers
+        trim_primers |
+        convert_fastq_to_fasta
 }
