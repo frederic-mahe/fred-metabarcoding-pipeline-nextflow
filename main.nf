@@ -3,7 +3,7 @@
 params.forward_primer = "CCAGCASCYGCGGTAATTCC"
 params.reverse_primer = "ACTTTCGTTCTTGATYRA"  // should be TYRATCAAGAACGAAAGT
 params.fastq_folder = "data"
-params.fastq_pattern = "/*_{1,2}.fastq.gz"
+params.fastq_pattern = "/*_1_{1,2}.fastq.gz"
 params.fastq_encoding = 33
 params.threads = 4
 
