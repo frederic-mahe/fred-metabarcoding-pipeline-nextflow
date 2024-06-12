@@ -1,12 +1,12 @@
 #!/usr/bin/env nextflow
 
 params.forward_primer = "CCAGCASCYGCGGTAATTCC"
-params.reverse_primer = "ACTTTCGTTCTTGATYRA"  // ARYTAGTTCTTGCTTTCA, should be TYRATCAAGAACGAAAGT
-params.reverse_primer_revcomp = "TYRATCAAGAACGAAAGT"
+params.reverse_primer = "ACTTTCGTTCTTGATYRA"  // should be TYRATCAAGAACGAAAGT
 params.fastq_folder = "data"
 params.fastq_pattern = "/*_{1,2}.fastq.gz"
 params.fastq_encoding = 33
 params.threads = 4
+
 
 process generate_test_data_urls {
     output:
@@ -71,26 +71,6 @@ process merge_fastq_pairs {
 }
 
 
-process revcomp {
-    // reverse-complement a DNA/RNA IUPAC string
-    input:
-    val "reverse_primer"
-    
-    output:
-    stdout
-
-    shell:
-    '''
-    #!/bin/bash
-
-    [[ -z !{reverse_primer} ]] && { echo "error: empty string" ; exit 1 ; }
-    nucleotides="acgturykmbdhvswACGTURYKMBDHVSW"
-    complements="tgcaayrmkvhdbswTGCAAYRMKVHDBSW"
-    tr "${nucleotides}" "${complements}" <<< !{reverse_primer} | rev
-    '''
-}
-
-
 process trim_primers {
     // search forward primer in both normal and revcomp: now all reads
     // are in the same orientation. Matching leftmost is the default.
@@ -106,6 +86,10 @@ process trim_primers {
     '''
     #!/bin/bash
 
+    nucleotides="acgturykmbdhvswACGTURYKMBDHVSW"
+    complements="tgcaayrmkvhdbswTGCAAYRMKVHDBSW"
+    reverse_primer_revcomp=$(tr "${nucleotides}" "${complements}" <<< !{params.reverse_primer} | rev)
+
     MIN_F=$(( !{params.forward_primer.length()} * 2 / 3 ))  # match is >= 2/3 of primer length
     MIN_R=$(( !{params.reverse_primer.length()} * 2 / 3 ))
     cutadapt \
@@ -113,7 +97,7 @@ process trim_primers {
         --front "!{params.forward_primer};rightmost" \
         --overlap "${MIN_F}" !{merged_fastq} | \
         cutadapt \
-            --adapter "!{params.reverse_primer_revcomp}" \
+            --adapter "${reverse_primer_revcomp}" \
             --overlap "${MIN_R}" \
             --max-n 0 - > trimmed_fastq
     '''
@@ -231,9 +215,6 @@ workflow {
     generate_test_data_urls |
         download_list_of_urls
 
-    // reverse-complement reverse primer
-    // params.reverse_primer_revcomp = revcomp(params.reverse_primer)
-    
     // merge, trim, convert
     ch_filtered_fasta = channel.fromFilePairs(params.fastq_folder + params.fastq_pattern) |
         merge_fastq_pairs |
