@@ -42,7 +42,7 @@ process download_list_of_urls {
     '''
     #!/bin/bash
 
-    wget --continue --input-file="!{urls}"
+    wget --continue --quiet --input-file="!{urls}"
     '''
 }
 
