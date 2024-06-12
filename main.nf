@@ -171,8 +171,32 @@ process extract_expected_error_values {
 }
 
 
-workflow {
+process dereplicate_fasta {
+    // dereplicate and discard expected error values (ee)
+    input:
+    val sampleId
+    path filtered_fasta
 
+    publishDir params.fastq_folder
+
+    output:
+    val sampleId
+    path "${sampleId}.fas"
+
+    shell:
+    '''
+    vsearch \
+        --derep_fulllength !{filtered_fasta} \
+        --sizeout \
+        --quiet \
+        --fasta_width 0 \
+        --xee \
+        --output - > !{sampleId}.fas
+    '''
+}
+
+
+workflow {
     // collect test data
     generate_test_data_urls |
         download_list_of_urls
