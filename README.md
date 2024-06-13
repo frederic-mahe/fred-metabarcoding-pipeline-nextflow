@@ -13,4 +13,7 @@ Current status:
   - [ ] user-set parameters (empty strings, unrealistic values?),
   - [ ] dependencies and minimal versions (vsearch, cutadapt, swarm, bash >= 4),
 - [ ] adapt to work with slurm,
+- [ ] automatically deduced the fastq file naming pattern,
+- [ ] automatically deduced compression (gz, bz2) or the lack-of,
+- [ ] extend to multiplexed datasets,
 - [ ] draft of the second section of the pipeline (work at the study scale)
