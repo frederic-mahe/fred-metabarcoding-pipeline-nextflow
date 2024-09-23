@@ -1,13 +1,5 @@
 #!/usr/bin/env nextflow
 
-params.forward_primer = "CCAGCASCYGCGGTAATTCC"
-params.reverse_primer = "ACTTTCGTTCTTGATYRA"  // should be TYRATCAAGAACGAAAGT
-params.fastq_folder = "data"
-params.fastq_pattern = "/*_1_{1,2}.fastq.gz"
-params.fastq_encoding = 33
-params.threads = 4
-
-
 process generate_test_data_urls {
     output:
     path "test_data_urls.list"
@@ -138,7 +130,7 @@ process extract_expected_error_values {
     val sampleId
     path filtered_fasta
 
-    publishDir params.fastq_folder
+    publishDir params.output_folder
 
     output:
     val sampleId
@@ -161,7 +153,7 @@ process dereplicate_fasta {
     val sampleId
     path filtered_fasta
 
-    publishDir params.fastq_folder
+    publishDir params.output_folder
 
     output:
     val sampleId
@@ -187,7 +179,7 @@ process list_local_clusters {
     val sampleId
     path dereplicated_fasta
 
-    publishDir params.fastq_folder
+    publishDir params.output_folder
 
     output:
     val sampleId
@@ -211,12 +203,27 @@ process list_local_clusters {
 
 
 workflow {
-    // collect test data
-    generate_test_data_urls |
+
+    if(params.toy_dataset) {
+
+        // collect test data
+    
+        toy_dataset = generate_test_data_urls |
         download_list_of_urls
 
+        input_files = toy_dataset
+            .flatten()
+            .map { it -> [it.name - ~/_1_[12].fastq.gz/, it] }
+            .groupTuple()
+
+    } else {
+
+        input_files = channel.fromFilePairs(params.fastq_pattern)
+
+    }
+
     // merge, trim, convert
-    ch_filtered_fasta = channel.fromFilePairs(params.fastq_folder + params.fastq_pattern) |
+    ch_filtered_fasta = input_files |
         merge_fastq_pairs |
         trim_primers |
         convert_fastq_to_fasta
