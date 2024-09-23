@@ -17,3 +17,9 @@ Current status:
 - [ ] automatically deduce compression (gz, bz2) or the lack-of,
 - [ ] extend to multiplexed datasets,
 - [ ] draft of the second section of the pipeline (work at the study scale)
+
+## Run workflow with test dataset
+
+```bash
+nextflow run -r main frederic-mahe/fred-metabarcoding-pipeline-nextflow -profile test
+```
